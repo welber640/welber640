@@ -1,16 +1,63 @@
-## Hi there 👋
+_G.infinjump = not _G.infinjump
 
-<!--
-**welber640/welber640** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+local plr = game:GetService'Players'.LocalPlayer
+local m = plr:GetMouse()
+m.KeyDown:connect(function(k)
+    if _G.infinjump then
+        if k:byte() == 32 then
+            plrh = game:GetService'Players'.LocalPlayer.Character:FindFirstChildOfClass'Humanoid'
+            plrh:ChangeState('Jumping')
+            wait()
+            plrh:ChangeState('Seated')
+        end
+    end
+end)
 
-Here are some ideas to get you started:
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+local camera = game.Workspace.CurrentCamera
+local UIS = game:GetService("UserInputService")
+local isFollowing = false
+local targetPlayer = nil
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+local function toggleCameraFollow()
+    isFollowing = not isFollowing
+end
+
+UIS.InputBegan:Connect(function(input, gameProcessedEvent)
+    if input.KeyCode == Enum.KeyCode.U then
+        toggleCameraFollow()
+    end
+end)
+
+local function findClosestPlayer()
+    local closestPlayer = nil
+    local shortestDistance = math.huge
+
+    for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+        if otherPlayer ~= player and otherPlayer.Character then
+            local humanoidRootPart = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if humanoidRootPart then
+                local distance = (player.Character.HumanoidRootPart.Position - humanoidRootPart.Position).Magnitude
+                if distance < shortestDistance then
+                    shortestDistance = distance
+                    closestPlayer = otherPlayer
+                end
+            end
+        end
+    end
+
+    return closestPlayer
+end
+
+game:GetService("RunService").Heartbeat:Connect(function()
+    if isFollowing then
+        targetPlayer = findClosestPlayer()
+        if targetPlayer and targetPlayer.Character then
+            local humanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if humanoidRootPart then
+                camera.CFrame = CFrame.new(camera.CFrame.Position, humanoidRootPart.Position)
+            end
+        end
+    end
+end)
